@@ -1,5 +1,6 @@
 const Q = require('q');
 const Transaction = require('../models/Transaction');
+const Product = require('../models/Product');
 const questions   = require('./questions');
 const { prompt }  = require('inquirer');
 
@@ -39,5 +40,20 @@ module.exports = {
                 return Q.resolve(list);
             });
         });
+    },
+    addProduct() {
+        return prompt(questions.product_creation)
+        .then(answers => {
+            const { name, category, price } = answers;
+            return Product.add({ name, category, price });
+        });
+    },
+    getAllProducts() {
+        return Product.getAll()
+        .then(list => {
+            console.info(list.join(`\n${'-'.repeat(10)}\n`));
+            return Q.resolve(list);
+        });
+    
     }
 };

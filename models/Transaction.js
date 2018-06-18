@@ -1,41 +1,40 @@
 const Q = require('q');
 const mongoose = require('mongoose');
-const assert = require('assert');
-const Block  = require('../scripts/Block');
-
-mongoose.Promise = global.Promise;
-
+const Block  = require('../classes/Block');
 const db = mongoose.connect('mongodb://localhost:27017/test');
 
 const transactionSchema = mongoose.Schema({
     time: {
-        type: Number
+        type: Date,
+        required: true
     },
     data: {
         email: {
             type: String
         },
-        product: {
-            type: String
+        product_id: {
+            type: 'ObjectId'
         },
         quantity: {
-            type: Number
-        },
-        amount: {
-            type: Number
+            type: Number,
+            min: 0
         }
     },
     hash: {
-        type: String
+        type: String,
+        required: true
     },
     previousHash: {
-        type: String
+        type: String,
+        required: true
     },
     index: {
-        type: Number
+        type: Number,
+        required: true
     },
     nounce: {
-        type: Number
+        type: Number,
+        default: 0,
     }
 });
 
@@ -100,6 +99,7 @@ const add = data => {
         return d.promise;
     });
 };
+
 const parseTransaction = transaction => {
     return `Date: ${new Date(transaction.time)}\nBuyer: ${transaction.data.email}\nProduct: ${transaction.data.product}`;
 };
