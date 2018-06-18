@@ -3,10 +3,15 @@ const program     = require('commander');
 const { prompt }  = require('inquirer');
 const Transaction = require('./models/Transaction');
 const questions   = require('./scripts/questions');
+const Q = require('q');
 
 const run = {
     getAll() {
-        return Transaction.getAll();
+        return Transaction.getAll(true)
+        .then(list => {
+            console.info(list.join('\n-----------------\n'));
+            return Q.resolve(list);
+        });
     },
     add() {
         return prompt(questions.construction)
@@ -14,7 +19,33 @@ const run = {
             const { email, product} = answers;
             const data = { email, product };
             return Transaction.add(data);
-            // return answer.email();
+        });
+    },
+    get() {
+        let field;
+        return prompt(questions.query_type)
+        .then(answers => {
+            field = answers.query;
+            return prompt(questions.query[field]);
+        })
+        .then(answers => {
+            const d = Q.defer();
+
+            let query = {};
+            query[field] = { 'in': answers.value };
+            Transaction.get(query)
+            .then((transactions, err) => {
+                if (err) {
+                    return d.reject(err);
+                }
+                console.log('transactions found!:')
+                console.log(transactions)
+                d.resolve(transactions);
+            })
+            .fail(err => {
+                return d.reject(err);
+            })
+            return d.promise;
         });
     }
 };
@@ -24,33 +55,16 @@ program
     .description('Transaction management system');
 
 program
-    .command('addBlock <email> <product>')
-    .alias('a')
-    .description('Add a new transaction')
-    .action((email, product) => {
-        let B = new Block(Date.now(), { email, product });
-        Transaction.add(B);
-    });
-
-program
-    .command('getTransactionList')
-    .alias('ls')
-    .description('Get transactions list')
-    .action(() => Transaction.getAll());
-
-program
-    .command('getTransaction <id>')
-    .alias('g')
-    .description('Get transactions')
-    .action(name => Transaction.get(name));
-
-program
     .command('start')
     .alias('s')
-    .description('Start')
+    .description('Start script')
     .action(() => {
         prompt(questions.actions)
-        .then(answer => run[answer.action]() );
+        .then(answer => run[answer.action]())
+        .then(() => {
+            console.info('Process completed!');
+            process.exit(1);
+        });
     });
-  
-  program.parse(process.argv);
+
+program.parse(process.argv);

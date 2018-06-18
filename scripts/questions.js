@@ -29,10 +29,53 @@ const construction = [
     }
 ];
 
-const query = [];
+const query_type = [
+    {
+      type   : 'list',
+      name   : 'query',
+      choices: [{
+          name : 'Index',
+          value: 'index'
+      }, {
+        name : 'Buyer email',
+        value: 'email'
+      }, {
+        name : 'Product name',
+        value: 'product'
+      }],
+      message: 'Which param would you like to use to search?'
+    }
+];
+
+const query = {
+    index: [{
+        type   : 'input',
+        name   : 'value',
+        message: 'Index value?'
+    }],
+    email: [{
+        type   : 'input',
+        name   : 'value',
+        message: 'Buyer email?'
+    }],
+    product: [{
+        type   : 'input',
+        name   : 'value',
+        message: 'Product name?'
+    }],
+};
+
+const query_value = [
+    {
+        type   : 'input',
+        name   : 'email',
+        message: 'buyer email?'
+    }
+];
 
 module.exports = {
     actions,
     construction,
+    query_type,
     query
 };

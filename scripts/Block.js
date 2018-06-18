@@ -7,7 +7,7 @@ class Block {
     * @param {Object} data.product - product name
     * @returns {String} Status
     */
-    constructor(time, data) {
+    constructor(data, time) {
         this.time = time? time : Date.now();
         this.data = data;
 
