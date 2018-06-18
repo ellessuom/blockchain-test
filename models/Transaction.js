@@ -65,47 +65,52 @@ const initialize = () => {
  * @param {Object} data
  * @returns {Object|Promise}
  */
-const add = data => {   
+const add = data => {
+    let transactions;
     return getAll()
-    .then(transactions => {
+    .then(res_transactions => {
         let p = Q.resolve();
-
+        transactions = res_transactions;
         if (!transactions.length) {
             p = initialize();
         }
 
-        return p.then(genesis => {
-            let last = genesis;
-            if (!genesis) {
-                last = transactions[transactions.length -1];
+        return p;
+    })
+    .then(genesis => {
+        const d = Q.defer();
+        let last = genesis;
+        if (!genesis) {
+            last = transactions[transactions.length -1];
+        }
+
+        data.previousHash = last.hash;
+        data.index = last.index + 1;
+
+        let transaction = new Block(data);
+        Transaction.create(transaction, err => {
+            if (err) {
+                console.err('Error while trying to create a new transaction');
+                return d.reject(err);
             }
-
-            data.previousHash = last.hash;
-            data.index = last.index + 1;
-            let transaction = new Block(data);
-    
-            Transaction.create(transaction, err => {
-                if (err) {
-                    console.err('Error while trying to create a new transaction');
-                    return d.reject(err);
-                }
-                console.info('New block added!');
-                d.resolve();
-            });
-
+            console.info('New block added!');
+            d.resolve();
         });
+
+        return d.promise;
     });
 };
+const parseTransaction = transaction => {
+    return `Date: ${new Date(transaction.time)}\nBuyer: ${transaction.data.email}\nProduct: ${transaction.data.product}`;
+};
 
-/**
- * @function  [getAll]
- * @returns {Json} product
- */
-const getAll = (to_parse) => {
+const fetch = (query, to_parse) => {
     const d = Q.defer();
-
+    if (!query) {
+        query = null;
+    }
     console.info('Fetching transactions...');
-    Transaction.find().sort('time')
+    Transaction.find(query).sort('time')
     .exec((err, transactions) => {
         if (err) {
             console.log('Error while trying to fetch transaction list');
@@ -118,27 +123,19 @@ const getAll = (to_parse) => {
 };
 
 /**
+ * @function  [getAll]
+ * @returns {Json} product
+ */
+const getAll = (to_parse) => {
+    return fetch(null, to_parse);
+};
+
+/**
  * @function  [get]
  * @returns {Json} product
  */
-const get = (query) => {
-    const d = Q.defer();
-
-    Transaction.find(query)
-    .exec((err, transaction) => {
-        if (err) {
-            console.log('Error while trying to fetch a transaction');
-            console.log(err);
-            return d.reject(err);
-        }
-        d.resolve(transaction);
-    });
-
-    return d.promise;
-};
-
-const parseTransaction = transaction => {
-    return `Date: ${new Date(transaction.time)}\nBuyer: ${transaction.data.email}\nProduct: ${transaction.data.product}`;
+const get = (query, to_parse) => {
+    return fetch(query, to_parse);
 };
 
 // Export all methods
