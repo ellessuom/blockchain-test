@@ -48,12 +48,12 @@ const query_field_value = {
         name: 'value',
         message: 'Index value?'
     }],
-    email: [{
+    'data.email': [{
         type: 'input',
         name: 'value',
         message: 'Buyer email?'
     }],
-    product: [{
+    'data.product': [{
         type: 'input',
         name: 'value',
         message: 'Product name?'

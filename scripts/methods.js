@@ -8,14 +8,13 @@ module.exports = {
         return prompt(questions.creation)
         .then(answers => {
             const { email, product} = answers;
-            const data = { email, product };
-            return Transaction.add(data);
+            return Transaction.add({ email, product });
         });
     },
     getAll() {
         return Transaction.getAll(true)
         .then(list => {
-            console.info(list.join('\n-----------------\n'));
+            console.info(list.join(`\n${'-'.repeat(10)}\n`));
             return Q.resolve(list);
         });
     },
@@ -24,27 +23,21 @@ module.exports = {
         return prompt(questions.query_field)
         .then(answers => {
             field = answers.query;
-            console.log('field: ' + field);
             return prompt(questions.query_field_value[field]);
         })
         .then(answers => {
-            const d = Q.defer();
-            console.log('user input: ' + answers.value);
-
             let query = {};
-            query = { [ field ] : { '$regex': answers.value, '$options': 'i' } },
+            if (field === 'index') {
+                query.index = answers.value;
+            } else {
+                query = { [ field ] : { '$regex': answers.value, '$options': 'i' } };
+            }
 
-            console.log('query:')
-            console.log(query)
-            Transaction.get(query, true)
-            .then(transactions => {
-                console.info(transactions.join('\n-----------------\n'));
-                d.resolve(transactions);
-            })
-            .fail(err => {
-                return d.reject(err);
-            })
-            return d.promise;
+            return Transaction.get(query, true)
+            .then(list => {
+                console.info(list.join(`\n${'-'.repeat(10)}\n`));
+                return Q.resolve(list);
+            });
         });
     }
 };

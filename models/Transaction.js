@@ -113,8 +113,12 @@ const fetch = (query, to_parse) => {
     Transaction.find(query).sort('time')
     .exec((err, transactions) => {
         if (err) {
-            console.log('Error while trying to fetch transaction list');
+            console.err('Error while trying to fetch transaction list');
             return d.reject(err);
+        }
+        if (!transactions.length) {
+            console.info('No transactions found!');
+            return d.resolve([]);
         }
         d.resolve(to_parse? transactions.map(t => parseTransaction(t)) : transactions);
     });
